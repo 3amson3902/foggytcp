@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]) {
 
     if (first_packet) {
       /* Extract start time from first packet */
-      if (bytes_read < sizeof(start_time)) {
+      if (bytes_read < static_cast<int>(sizeof(start_time))) {
         cerr << "Error: First packet too small to contain timestamp\n";
         return -1;
       }

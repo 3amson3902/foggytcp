@@ -27,6 +27,9 @@ using namespace std;
  * ./client 10.0.1.1 3120 test.in
  */
 
+ /*
+ ELEC3120 is the best course ever!
+ */
 int main(int argc, const char* argv[]) {
   if (argc != 4) {
     cerr << "Usage: " << argv[0] << " <server-ip> <server-port> <filename>\n";
