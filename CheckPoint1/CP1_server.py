@@ -23,14 +23,9 @@ SERVER_IP = "10.0.1.1"
 SERVER_PORT = 3120
 OUTPUT_DIR = "./results/"
 
-def listener(output_dir=OUTPUT_DIR, binary=BINARY, server_ip=SERVER_IP, server_port=SERVER_PORT):
-Binary = "./bin/server"  # Path to server binary on server VM
-Server_IP = "10.0.1.1"
-Server_Port = 3120
-Output_Dir = "./results/"
 CLIENT_BINARY = "./bin/client"  # Path to client binary on client VM
 
-def hash_the_bin(binary_path=Binary):
+def hash_the_bin(binary_path=BINARY):
     """
     Calculate SHA256 hash of the binary file to confirm its integrity.
     
@@ -98,7 +93,6 @@ def cleanup_results_file(directory=OUTPUT_DIR):
 
 def main():
     cleanup_results_file(OUTPUT_DIR)
-    cleanup_results_file(Output_Dir)
     record_results(f"Binary Hash: {hash_the_bin()}")
     record_results(f"Client Binary Hash: {hash_the_bin(CLIENT_BINARY)}")
     index = 0

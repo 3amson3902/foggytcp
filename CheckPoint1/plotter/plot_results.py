@@ -73,7 +73,7 @@ def create_plots():
     test1, test2, test3 = extract_data_from_report()
     
     # Create figure with 2x2 subplot layout
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+    fig, ax = plt.subplots(2, 2, figsize=(12, 10))
     fig.suptitle('FoggyTCP Performance Analysis: Theoretical vs Experimental Results', 
                  fontsize=14, fontweight='bold')
     
@@ -117,40 +117,6 @@ def create_plots():
     ax3.set_title('Test 3: Delay Impact\n(1MB file, 10 Mbps)')
     ax3.legend()
     ax3.grid(True, alpha=0.3)
-    
-    # Test 4: Overhead Analysis (Experimental - Theoretical)
-    overhead1 = test1['experimental'] - test1['theoretical']
-    overhead2 = test2['experimental'] - test2['theoretical']
-    overhead3 = test3['experimental'] - test3['theoretical']
-    
-    # Calculate relative overhead percentages
-    rel_overhead1 = (overhead1 / test1['theoretical']) * 100
-    rel_overhead2 = (overhead2 / test2['theoretical']) * 100
-    rel_overhead3 = (overhead3 / test3['theoretical']) * 100
-    
-    # Plot relative overhead for each test
-    x_pos = np.arange(len(test1['file_sizes']))
-    width = 0.25
-    
-    ax4.bar(x_pos - width, rel_overhead1, width, label='File Size Test', alpha=0.8, color='#2ca02c')
-    
-    x_pos2 = np.arange(len(test2['bandwidths']))
-    ax4_twin = ax4.twinx()
-    ax4_twin.bar(x_pos2, rel_overhead2[:len(x_pos2)], width, label='Bandwidth Test', alpha=0.8, color='#ff7f0e')
-    
-    ax4.set_xlabel('Test Conditions')
-    ax4.set_ylabel('TCP Overhead (%)', color='#2ca02c')
-    ax4_twin.set_ylabel('TCP Overhead (%) - Bandwidth Test', color='#ff7f0e')
-    ax4.set_title('TCP Protocol Overhead Analysis')
-    
-    # Combine legends
-    lines1, labels1 = ax4.get_legend_handles_labels()
-    lines2, labels2 = ax4_twin.get_legend_handles_labels()
-    ax4.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
-    
-    ax4.grid(True, alpha=0.3)
-    ax4.set_xticks(range(max(len(test1['file_sizes']), len(test2['bandwidths']))))
-    ax4.set_xticklabels([f'T{i+1}' for i in range(max(len(test1['file_sizes']), len(test2['bandwidths'])))])
     
     # Adjust layout to prevent overlap
     plt.tight_layout()
