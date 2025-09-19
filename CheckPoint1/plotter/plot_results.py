@@ -3,12 +3,14 @@
 FoggyTCP Performance Analysis Plotting Script
 Generates academic-style plots for three test scenarios with theoretical vs experimental comparisons
 """
+# A not so hairry plotter
 
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.patches as mpatches
 
 # Configure matplotlib for academic/LaTeX output
+# Do NOT edit this section
 plt.rcParams.update({
     'font.family': 'serif',
     'font.serif': ['Times New Roman', 'DejaVu Serif'],
@@ -27,6 +29,7 @@ plt.rcParams.update({
 })
 
 # Academic color scheme
+# Do NOT edit this section
 colors = {
     'theoretical': '#1f77b4',  # Blue
     'experimental': '#d62728', # Red
@@ -173,36 +176,7 @@ def save_plots():
     png_file = 'foggytcp_performance_analysis.png'
     fig.savefig(png_file, format='png', dpi=300, bbox_inches='tight',
                 facecolor='white', edgecolor='none')
-    
-    print(f"✓ High-res PNG saved as: {png_file}")
-    
-    # Display summary statistics
-    test1, test2, test3 = extract_data_from_report()
-    
-    print("\n" + "="*60)
-    print("PERFORMANCE ANALYSIS SUMMARY")
-    print("="*60)
-    
-    # Calculate average overhead for each test
-    avg_overhead1 = np.mean(test1['experimental'] - test1['theoretical'])
-    avg_overhead2 = np.mean(test2['experimental'] - test2['theoretical'])
-    avg_overhead3 = np.mean(test3['experimental'] - test3['theoretical'])
-    
-    print(f"Average TCP Overhead:")
-    print(f"  File Size Test:  {avg_overhead1:.1f} ms")
-    print(f"  Bandwidth Test:  {avg_overhead2:.1f} ms")
-    print(f"  Delay Test:      {avg_overhead3:.1f} ms")
-    
-    # Calculate correlation coefficients
-    corr1 = np.corrcoef(test1['theoretical'], test1['experimental'])[0,1]
-    corr2 = np.corrcoef(test2['theoretical'], test2['experimental'])[0,1]
-    corr3 = np.corrcoef(test3['theoretical'], test3['experimental'])[0,1]
-    
-    print(f"\nTheoretical vs Experimental Correlation:")
-    print(f"  File Size Test:  {corr1:.3f}")
-    print(f"  Bandwidth Test:  {corr2:.3f}")
-    print(f"  Delay Test:      {corr3:.3f}")
-    
+
     plt.show()
 
 if __name__ == "__main__":
