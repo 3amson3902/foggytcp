@@ -1,0 +1,97 @@
+This is the report for checkpoint 1:
+
+=============================================================================
+TEST 1: DIFFERENT FILE SIZES (Fixed: 10Mbps bandwidth, 10ms delay)
+=============================================================================
+
+Hypothesis:
+With bandwidth and propagation delay fixed, file transmission time should increase linearly with file size.
+
+Theoretical Calculations:
+- Bandwidth: 10Mbps = 1.25 MB/s
+- Base delay: 10ms (propagation + processing)
+- Formula: Time = (File_Size / Bandwidth) + Base_Delay
+
+Theoretical vs Experimental Results:
+File Size | Theoretical Time | Experimental Time | Difference
+----------|------------------|-------------------|------------
+1KB       | 10.8ms          | 22ms              | +11.2ms
+5KB       | 14.0ms          | 24ms              | +10.0ms  
+25KB      | 30.0ms          | 39ms              | +9.0ms
+100KB     | 90.0ms          | 105ms             | +15.0ms
+1MB       | 810ms           | 901ms             | +91ms
+10MB      | 8010ms          | 9341ms            | +1331ms
+
+Analysis:
+- Linear relationship confirmed in both theoretical and experimental results
+- Experimental times consistently higher due to TCP overhead, congestion control, and protocol processing
+- Overhead increases with file size, suggesting TCP slow-start and congestion control effects
+
+=============================================================================
+TEST 2: DIFFERENT BANDWIDTHS (Fixed: 1MB file, 10ms delay)
+=============================================================================
+
+Hypothesis:
+With file size and delay fixed, transmission time should be inversely proportional to bandwidth.
+
+Theoretical Calculations:
+- File size: 1MB = 1,048,576 bytes
+- Base delay: 10ms
+- Formula: Time = (1MB / Bandwidth) + 10ms
+
+Theoretical vs Experimental Results:
+Bandwidth | Theoretical Time | Experimental Time | Difference
+----------|------------------|-------------------|------------
+1Mbps     | 8394ms          | 6998ms            | -1396ms
+5Mbps     | 1679ms          | 1773ms            | +94ms
+10Mbps    | 839ms           | 901ms             | +62ms
+20Mbps    | 420ms           | 504ms             | +84ms
+
+Analysis:
+- Inverse relationship confirmed
+- At low bandwidth (1Mbps), experimental time is faster than theoretical (possibly due to compression or TCP optimizations)
+- At higher bandwidths, experimental times are slower due to TCP overhead
+- Results show diminishing returns at very high bandwidths
+
+=============================================================================
+TEST 3: DIFFERENT DELAYS (Fixed: 1MB file, 10Mbps bandwidth)
+=============================================================================
+
+Hypothesis:
+With file size and bandwidth fixed, transmission time should increase linearly with propagation delay.
+
+Theoretical Calculations:
+- File size: 1MB, Bandwidth: 10Mbps
+- Base transmission time: 839ms (1MB / 10Mbps)
+- Formula: Time = 839ms + Delay
+
+Theoretical vs Experimental Results:
+Delay     | Theoretical Time | Experimental Time | Difference
+----------|------------------|-------------------|------------
+0ms       | 839ms           | 889ms             | +50ms
+5ms       | 844ms           | 895ms             | +51ms
+10ms      | 849ms           | 900ms             | +51ms
+20ms      | 859ms           | 920ms             | +61ms
+50ms      | 889ms           | 1072ms            | +183ms
+100ms     | 939ms           | 1255ms            | +316ms
+
+Analysis:
+- Linear relationship confirmed for delays up to 20ms
+- At higher delays (50ms+), experimental times show more significant overhead
+- This suggests TCP timeout and retransmission effects become more prominent at higher delays
+- The consistent ~50ms base overhead indicates TCP handshake and processing time
+
+=============================================================================
+OVERALL CONCLUSIONS:
+=============================================================================
+
+1. **TCP Overhead**: Experimental results consistently show overhead compared to theoretical calculations, indicating real-world TCP protocol costs.
+
+2. **Scalability**: The foggytcp implementation scales well with different network conditions, maintaining expected relationships between parameters.
+
+3. **Performance Characteristics**:
+   - File size: Linear scaling with expected TCP overhead
+   - Bandwidth: Inverse relationship with diminishing returns at high speeds
+   - Delay: Linear impact with increasing overhead at high delays
+
+4. **Protocol Efficiency**: Results demonstrate that the implementation handles various network conditions appropriately, with performance characteristics matching TCP behavior.
