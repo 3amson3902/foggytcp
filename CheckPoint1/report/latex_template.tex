@@ -23,8 +23,8 @@
 
 \section{Hypothesis}
 
-In this checkpoint, we hypothesize that a point to point 
-network transmission time is modeled by the following equation:
+In this checkpoint, we hypothesize that transmission time via a point to point 
+network is modeled by the following equation:
 
 \begin{equation}
     Time = \frac{File Size}{Bandwidth} + 2 \times Propagation Delay
@@ -33,13 +33,13 @@ network transmission time is modeled by the following equation:
 meaning that the transmission time is linearly proportional to the file size and propagation delay,
  and inversely proportional to the bandwidth.
   We expect that the experimental results will closely align with this theoretical model,
-   with minor deviations due to Virtual hardware overhead.
+   with minor deviations due to various hardware overhead.
 
 \section{Experiment}    
 \subsection{Setup}
 The experiment was conducted using two virtual machines (VMs) connected via a point-to-point link.
- The server VM hosted the FoggyTCP server, while the client VM ran the FoggyTCP client to send files of varying sizes.
-  Network conditions were manipulated using traffic control (tc) to simulate different bandwidths and propagation delays.
+ The server VM hosted the FoggyTCP server binary, while the client VM ran the client binary to send files.
+  The network conditions were manipulated using traffic control (tconfig) to simulate different bandwidths and propagation delays.
 
 \section{Performance Analysis Results}
 
@@ -48,11 +48,15 @@ The following figure presents a comprehensive analysis of the FoggyTCP implement
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{foggytcp_performance_analysis.pdf}
-    \caption{FoggyTCP Performance Analysis: Comprehensive comparison of theoretical vs experimental results across three test scenarios. (a) File size impact with fixed bandwidth (10 Mbps) and delay (10ms), (b) Bandwidth impact with fixed file size (1MB) and delay (10ms), (c) Propagation delay impact with fixed file size (1MB) and bandwidth (10 Mbps), (d) TCP protocol overhead analysis showing relative performance differences.}
+    \caption{FoggyTCP Performance Comparison: Theoretical vs Experimental Results. 
+    (a) File size impact with fixed bandwidth (10 Mbps) and delay (10ms), 
+    (b) Bandwidth impact with fixed file size (1MB) and delay (10ms), 
+    (c) Propagation delay impact with fixed file size (1MB) and bandwidth (10 Mbps), 
+    (d) TCP protocol overhead analysis showing relative performance differences.}
     \label{fig:foggytcp_analysis}
 \end{figure}
 
-\subsection{Key Findings}
+\subsection{Key Findingssom}
 
 \begin{itemize}
     \item \textbf{Linear Scaling}: File transmission time scales linearly with file size, confirming expected behavior with an average TCP overhead of 244.5ms.
