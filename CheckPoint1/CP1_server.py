@@ -1,6 +1,7 @@
 import subprocess
 import os
 import time
+import hashlib
 from pathlib import Path
 
 """
@@ -21,7 +22,43 @@ Binary = "./bin/server"  # Path to server binary on server VM
 Server_IP = "10.0.1.1"
 Server_Port = 3120
 Output_Dir = "./results/"
+CLIENT_BINARY = "./bin/client"  # Path to client binary on client VM
 
+def hash_the_bin(binary_path=Binary):
+    """
+    Calculate SHA256 hash of the binary file to confirm its integrity.
+    
+    Args:
+        binary_path: Path to the binary file to hash
+        
+    Returns:
+        str: SHA256 hash of the binary file, or error message if file not found
+    """
+    try:
+        binary_file = Path(binary_path)
+        if not binary_file.exists():
+            return f"Binary file not found: {binary_path}"
+        
+        # Calculate SHA256 hash
+        sha256_hash = hashlib.sha256()
+        with open(binary_file, "rb") as f:
+            # Read file in chunks to handle large files efficiently
+            for chunk in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(chunk)
+        
+        hash_value = sha256_hash.hexdigest()
+        print(f"Binary hash (SHA256): {hash_value}")
+        print(f"Binary path: {binary_path}")
+        print(f"Binary size: {binary_file.stat().st_size} bytes")
+        
+        return hash_value
+        
+    except Exception as e:
+        error_msg = f"Error hashing binary: {e}"
+        print(error_msg)
+        return error_msg
+    
+    
 def listener(Output_Dir=Output_Dir, Binary=Binary, Server_IP=Server_IP, Server_Port=Server_Port):
     print("Listener started")
     try:
@@ -55,6 +92,8 @@ def cleanup_results_file(directory=Output_Dir):
 
 def main():
     cleanup_results_file(Output_Dir)
+    record_results(f"Binary Hash: {hash_the_bin()}")
+    record_results(f"Client Binary Hash: {hash_the_bin(CLIENT_BINARY)}")
     index = 0
     while True:
         result = listener()
