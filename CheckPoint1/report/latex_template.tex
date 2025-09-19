@@ -27,7 +27,7 @@ In this checkpoint, we hypothesize that transmission time via a point to point
 network is modeled by the following equation:
 
 \begin{equation}
-    Time = \frac{File Size}{Bandwidth} + 2 \times Propagation Delay
+    Time = \frac{File Size}{Bandwidth} + 2 \times Propagation Delay + Constant\_Overhead
 \end{equation}
 
 meaning that the transmission time is linearly proportional to the file size and propagation delay,
@@ -63,10 +63,10 @@ VM specifications:
 
 % You need to record the command used to set up the network conditions using tc.
 % The following parameters were varied during the experiments:
-\section{Performance Analysis Results}
-
-The following figure presents a comprehensive analysis of the FoggyTCP implementation across three different test scenarios, 
- comparing theoretical predictions with experimental measurements.
+\section{Results}
+The following figure presents transmission time on the y-axis
+ for varying file sizes, bandwidths, and propagation delays (x-axis)
+  and comparing theoretical predictions with experimental measurements.
 
 \begin{figure}[H]
     \centering
@@ -78,6 +78,10 @@ The following figure presents a comprehensive analysis of the FoggyTCP implement
     (d) TCP protocol overhead analysis showing relative performance differences.}
     \label{fig:foggytcp_analysis}
 \end{figure}
+\section{Analysis}
+
+
+
 
 \subsection{Key Findings}
 
