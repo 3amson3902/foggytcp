@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.patches as mpatches
 
 # Configure matplotlib for academic/LaTeX output
+# Do NOT edit this section
 plt.rcParams.update({
     'font.family': 'serif',
     'font.serif': ['Times New Roman', 'DejaVu Serif'],

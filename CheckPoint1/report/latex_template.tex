@@ -35,15 +35,38 @@ meaning that the transmission time is linearly proportional to the file size and
   We expect that the experimental results will closely align with this theoretical model,
    with minor deviations due to various hardware overhead.
 
+
+% We do know that TCP has some overhead, so we expect the experimental results to be slightly higher than the theoretical values.
+%  However, we expect the overall trends to match closely, confirming the validity of our hypothesis.
+
 \section{Experiment}    
 \subsection{Setup}
 The experiment was conducted using two virtual machines (VMs) connected via a point-to-point link.
  The server VM hosted the FoggyTCP server binary, while the client VM ran the client binary to send files.
   The network conditions were manipulated using traffic control (tconfig) to simulate different bandwidths and propagation delays.
+    The server and client binary is compiled from the FoggyTCP source code provided in the repository,
+     and ran automatically using two separate python scripts.
 
+\subsection{Parameters}
+Host specifications:
+\begin{itemize}
+    \item CPU: AMD Ryzen AI 7 370HX
+    \item RAM: 64GB
+    \item OS: Windows 11 Pro (Host)
+\end{itemize}
+VM specifications:
+\begin{itemize}
+    \item CPU: 2 vCPUs
+    \item RAM: 1GB
+    \item OS: Ubuntu-Jammy 22.04 LTS
+\end{itemize}
+
+% You need to record the command used to set up the network conditions using tc.
+% The following parameters were varied during the experiments:
 \section{Performance Analysis Results}
 
-The following figure presents a comprehensive analysis of the FoggyTCP implementation across three different test scenarios, comparing theoretical predictions with experimental measurements.
+The following figure presents a comprehensive analysis of the FoggyTCP implementation across three different test scenarios, 
+ comparing theoretical predictions with experimental measurements.
 
 \begin{figure}[H]
     \centering
@@ -56,16 +79,20 @@ The following figure presents a comprehensive analysis of the FoggyTCP implement
     \label{fig:foggytcp_analysis}
 \end{figure}
 
-\subsection{Key Findingssom}
+\subsection{Key Findings}
 
 \begin{itemize}
-    \item \textbf{Linear Scaling}: File transmission time scales linearly with file size, confirming expected behavior with an average TCP overhead of 244.5ms.
+    \item \textbf{Linear Scaling}:
+    File transmission time scales linearly with file size,
+    confirming expected behavior with an average TCP overhead of 244.5ms.
     
-    \item \textbf{Inverse Bandwidth Relationship}: Transmission time shows the expected inverse relationship with bandwidth, with high correlation (r=0.999) between theoretical and experimental results.
+    \item \textbf{Inverse Bandwidth Relationship}:
+    Transmission time shows the expected inverse relationship with bandwidth,
+    with high correlation between theoretical and experimental results.
     
-    \item \textbf{Delay Impact}: Propagation delay linearly affects transmission time with strong correlation (r=0.994), showing consistent TCP behavior.
+    \item \textbf{Delay Impact}:
+    Propagation delay linearly affects transmission time with strong correlation.
     
-    \item \textbf{Protocol Efficiency}: The implementation demonstrates excellent correlation with theoretical models across all test conditions.
 \end{itemize}
 
 \subsection{Technical Details}
