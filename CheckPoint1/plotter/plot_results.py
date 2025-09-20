@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
 FoggyTCP Performance Analysis Plotting Script
-Generates academic-style plots for three test scenarios with theoretical vs experimental comparisons
+Simple plotter following UNIX philosophy: do one thing and do it well
 """
-# A not so hairry plotter
 
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.patches as mpatches
+from pathlib import Path
+import json
 
 # Configure matplotlib for academic/LaTeX output
 # Do NOT edit this section
@@ -36,114 +36,108 @@ colors = {
     'grid': '#cccccc'
 }
 
-def extract_data_from_report():
-    """Extract and organize data from the report with proper units"""
-    
-    # Test 1: Different File Sizes (Fixed: 10Mbps bandwidth, 10ms delay)
-    # Units: File sizes in KB/MB, Times in ms
-    test1_data = {
-        'file_sizes': np.array([1, 5, 25, 100, 1024, 10240]),  # KB
-        'file_labels': ['1KB', '5KB', '25KB', '100KB', '1MB', '10MB'],
-        'theoretical': np.array([10.8, 14.0, 30.0, 90.0, 810, 8010]),  # ms
-        'experimental': np.array([22, 24, 39, 105, 901, 9341])  # ms
-    }
-    
-    # Test 2: Different Bandwidths (Fixed: 1MB file, 10ms delay)
-    # Units: Bandwidth in Mbps, Times in ms
-    test2_data = {
-        'bandwidths': np.array([1, 5, 10, 20]),  # Mbps
-        'theoretical': np.array([8394, 1679, 839, 420]),  # ms
-        'experimental': np.array([6998, 1773, 901, 504])  # ms
-    }
-    
-    # Test 3: Different Delays (Fixed: 1MB file, 10Mbps bandwidth)
-    # Units: Delay in ms, Times in ms
-    test3_data = {
-        'delays': np.array([0, 5, 10, 20, 50, 100]),  # ms
-        'theoretical': np.array([839, 844, 849, 859, 889, 939]),  # ms
-        'experimental': np.array([889, 895, 900, 920, 1072, 1255])  # ms
-    }
-    
-    return test1_data, test2_data, test3_data
+SOC_DIR = Path(__file__).parent
 
-def create_plots():
-    """Create combined subplot figure with all three tests"""
+def process_theoretical_data(data, test_num):
+    """Process theoretical data - return all theoretical values"""
+    test = data['tests'][str(test_num)]
+    theoretical = np.array(test['theoretical'])
+    theoretical_params = np.array(test['theoretical_parameters'])
     
-    # Extract data
-    test1, test2, test3 = extract_data_from_report()
+    # Return both theoretical values and their corresponding parameters
+    return theoretical_params, theoretical
+
+def process_experimental_data(data, test_num):
+    """Process experimental data by averaging 5 runs per parameter - do one thing well"""
+    test = data['tests'][str(test_num)]
+    experimental = np.array(test['experimental'])
+    num_params = len(test['parameters']['values'])
+    runs_per_param = 5
     
-    # Create figure with 2x2 subplot layout
-    fig, ax = plt.subplots(2, 2, figsize=(12, 10))
-    fig.suptitle('FoggyTCP Performance Analysis: Theoretical vs Experimental Results', 
-                 fontsize=14, fontweight='bold')
+    # Reshape and average: each parameter has 5 consecutive measurements
+    reshaped = experimental[:num_params * runs_per_param].reshape(num_params, runs_per_param)
+    averaged = np.mean(reshaped, axis=1)
     
-    # Test 1: File Size vs Transmission Time (Log scale for file sizes)
-    ax1.loglog(test1['file_sizes'], test1['theoretical'], 'o-', 
-               color=colors['theoretical'], label='Theoretical', markersize=6)
-    ax1.loglog(test1['file_sizes'], test1['experimental'], 's-', 
-               color=colors['experimental'], label='Experimental', markersize=6)
+    return averaged
+
+def extract_test_parameters(data, test_num):
+    """Extract parameters for a specific test - do one thing well"""
+    test = data['tests'][str(test_num)]
+    params = test['parameters']
+    return {
+        'values': params['values'],
+        'labels': params.get('labels', [f"{v}{params['unit']}" for v in params['values']]),
+        'unit': params['unit'],
+        'name': params['name'],
+        'description': params['description']
+    }
+
+def load_json_data(json_file_path):
+    """Load JSON data from file - do one thing well"""
+    try:
+        with open(json_file_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"Error: {json_file_path} not found")
+        exit(1)
+
+def create_single_plot(data, test_num=1):
+    """Create one simple plot for specified test - do one thing well"""
+    # Extract data using helper functions
+    params = extract_test_parameters(data, test_num)
+    experimental = process_experimental_data(data, test_num)
+    theoretical_params, theoretical = process_theoretical_data(data, test_num)
     
-    ax1.set_xlabel('File Size (KB)')
-    ax1.set_ylabel('Transmission Time (ms)')
-    ax1.set_title('Test 1: File Size Impact\n(10 Mbps, 10ms delay)')
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
+    # Debug: Print data ranges
+    print(f"Test {test_num} Data Summary:")
+    print(f"Experimental params: {params['values']}")
+    print(f"Experimental values: {experimental}")
+    print(f"Theoretical params range: {theoretical_params[0]} to {theoretical_params[-1]} ({len(theoretical_params)} points)")
+    print(f"Theoretical values range: {theoretical[0]} to {theoretical[-1]}")
+    print()
     
-    # Custom x-axis labels for better readability
-    ax1.set_xticks(test1['file_sizes'])
-    ax1.set_xticklabels(test1['file_labels'])
+    # Create figure
+    fig, ax = plt.subplots(figsize=(10, 6))
     
-    # Test 2: Bandwidth vs Transmission Time
-    ax2.plot(test2['bandwidths'], test2['theoretical'], 'o-', 
-             color=colors['theoretical'], label='Theoretical', markersize=6)
-    ax2.plot(test2['bandwidths'], test2['experimental'], 's-', 
-             color=colors['experimental'], label='Experimental', markersize=6)
+    # Plot data - theoretical as continuous curve, experimental as points
+    ax.loglog(theoretical_params, theoretical, '-', 
+              color=colors['theoretical'], label='Theoretical', linewidth=2, alpha=0.8)
+    ax.loglog(params['values'], experimental, 's', 
+              color=colors['experimental'], label='Experimental', markersize=8, markerfacecolor='none', markeredgewidth=2)
     
-    ax2.set_xlabel('Bandwidth (Mbps)')
-    ax2.set_ylabel('Transmission Time (ms)')
-    ax2.set_title('Test 2: Bandwidth Impact\n(1MB file, 10ms delay)')
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
-    ax2.set_yscale('log')  # Log scale for better visualization of inverse relationship
+    # Configure plot
+    ax.set_xlabel(f"{params['name'].replace('_', ' ').title()} ({params['unit']})")
+    ax.set_ylabel('Transmission Time (ms)')
+    ax.set_title(f"FoggyTCP: {params['description']}")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
     
-    # Test 3: Delay vs Transmission Time
-    ax3.plot(test3['delays'], test3['theoretical'], 'o-', 
-             color=colors['theoretical'], label='Theoretical', markersize=6)
-    ax3.plot(test3['delays'], test3['experimental'], 's-', 
-             color=colors['experimental'], label='Experimental', markersize=6)
-    
-    ax3.set_xlabel('Propagation Delay (ms)')
-    ax3.set_ylabel('Transmission Time (ms)')
-    ax3.set_title('Test 3: Delay Impact\n(1MB file, 10 Mbps)')
-    ax3.legend()
-    ax3.grid(True, alpha=0.3)
-    
-    # Adjust layout to prevent overlap
     plt.tight_layout()
-    
     return fig
 
-def save_plots():
-    """Generate and save the plots as PDF"""
-    
-    print("Generating FoggyTCP performance analysis plots...")
-    
-    # Create the plots
-    fig = create_plots()
-    
-    # Save as PDF (best for LaTeX)
-    output_file = 'foggytcp_performance_analysis.pdf'
-    fig.savefig(output_file, format='pdf', dpi=300, bbox_inches='tight', 
+def save_figure(fig, filename='foggytcp_plot.pdf'):
+    """Save figure to file - do one thing well"""
+    fig.savefig(filename, format='pdf', dpi=300, bbox_inches='tight', 
                 facecolor='white', edgecolor='none')
-    
-    print(f"✓ Plots saved as: {output_file}")
-    
-    # Also save as high-resolution PNG for presentations
-    png_file = 'foggytcp_performance_analysis.png'
-    fig.savefig(png_file, format='png', dpi=300, bbox_inches='tight',
-                facecolor='white', edgecolor='none')
+    print(f"Plot saved as: {filename}")
 
+def show_plot(fig):
+    """Display plot - do one thing well"""
     plt.show()
 
+def main(test_num=1):
+    """Main execution - simple and linear"""
+    # Load data
+    json_file = SOC_DIR / 'index_based_results.json'
+    data = load_json_data(json_file)
+    
+    # Create plot for specified test
+    fig = create_single_plot(data, test_num)
+    
+    # Save and show
+    save_figure(fig, f'foggytcp_test{test_num}_plot.pdf')
+    show_plot(fig)
+
 if __name__ == "__main__":
-    save_plots()
+    # Default to test 1, but can be changed
+    main(test_num=1)

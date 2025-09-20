@@ -15,7 +15,12 @@ import re
 import os
 from typing import Dict, List, Tuple, Optional
 import argparse
+from pathlib import Path
+import numpy as np
 
+DEFAULT_RESULTS_DIR = "results"
+DEFAULT_SOC_DIR = Path(__file__).parent
+SCRIPT_DIR = Path(__file__).parent
 
 class LogParser:
     """Parser for FoggyTCP log files"""
@@ -370,8 +375,8 @@ class LogParser:
 def main():
     """Main function to run the parser"""
     parser = argparse.ArgumentParser(description='Parse FoggyTCP log files to JSON')
-    parser.add_argument('--input-dir', '-i', default='.',
-                        help='Input directory containing log files (default: current directory)')
+    parser.add_argument('--input-dir', '-i', default=str(SCRIPT_DIR),
+                        help='Input directory containing log files (default: script directory)')
     parser.add_argument('--output', '-o', default='parsed_results.json',
                         help='Output JSON file (default: parsed_results.json)')
     parser.add_argument('--summary', '-s', action='store_true',

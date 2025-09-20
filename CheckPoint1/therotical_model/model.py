@@ -32,8 +32,8 @@ def record_results(output, filename="results.log", directory=OUTPUT_DIR):
 def generate_data_file_size(
     bandwidth = 10 * 1024 * 1024 / 8,  # Defualt: 10 Mbps in bytes per second
     propagation_delay = 0.01,  # 10 ms in seconds
-    total_num_files = 256,
-    size_increment = 1024 * 15,
+    total_num_files = 10240,
+    size_increment = 1024 * 1,
     min_file_size = 1024
 ):
     file_sizes = np.zeros(total_num_files)
@@ -48,7 +48,7 @@ def generate_data_file_size(
 def generate_data_bandwidth(
     file_size = 1024 * 1024,  # Fixed: 1 MB file size
     propagation_delay = 0.01,  # Fixed: 10 ms in seconds
-    total_num_tests = 256,
+    total_num_tests = 20,
     bandwidth_increment = 1024 * 1024 / 8,  # 1 Mbps increment in bytes per second
     min_bandwidth = 1024 * 1024 / 8  # 1 Mbps in bytes per second
 ):
@@ -64,7 +64,7 @@ def generate_data_bandwidth(
 def generate_data_propagation_delay(
     file_size = 1024 * 1024,  # Fixed: 1 MB file size
     bandwidth = 10 * 1024 * 1024 / 8,  # Fixed: 10 Mbps in bytes per second
-    total_num_tests = 256,
+    total_num_tests = 100,
     delay_increment = 0.001,  # 1 ms increment in seconds
     min_delay = 0.001  # 1 ms in seconds
 ):
