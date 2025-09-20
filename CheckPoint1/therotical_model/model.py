@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import csv
 from pathlib import Path
 """
 # In this checkpoint, we hypothesize that transmission time via a point to point 
@@ -12,20 +13,30 @@ Time = \frac{File Size}{Bandwidth} + 2 \times Propagation Delay
 OUTPUT_DIR = Path(__file__).parent / "results"
 
 def cleanup_test_file(directory=OUTPUT_DIR):
-    """Remove results.log file if it exists, following Unix philosophy of doing one thing well."""
-    results_file = Path(directory) / "results.log"
+    """Remove results.csv file if it exists, following Unix philosophy of doing one thing well."""
+    results_file = Path(directory) / "results.csv"
     if results_file.exists():
         os.remove(results_file)
 
 def theoretical_time(file_size, bandwidth, propagation_delay):
     return (file_size / bandwidth) + (2 * propagation_delay)
 
-def record_results(output, filename="results.log", directory=OUTPUT_DIR):
+def record_results_csv(test_type, parameter_value, parameter_unit, time_ms, filename="results.csv", directory=OUTPUT_DIR):
+    """Record results in CSV format with proper headers."""
     # Create directory if it doesn't exist
     Path(directory).mkdir(parents=True, exist_ok=True)
     
-    with open(Path(directory) / filename, "a") as f:
-        f.write(output + "\n")
+    csv_file = Path(directory) / filename
+    file_exists = csv_file.exists()
+    
+    with open(csv_file, "a", newline='') as f:
+        writer = csv.writer(f)
+        
+        # Write header if file doesn't exist
+        if not file_exists:
+            writer.writerow(["Test_Type", "Parameter_Value", "Parameter_Unit", "Time_ms"])
+        
+        writer.writerow([test_type, parameter_value, parameter_unit, time_ms])
         f.flush()
         os.fsync(f.fileno())
 
@@ -43,7 +54,7 @@ def generate_data_file_size(
         
     for y in file_sizes:
         time = theoretical_time(y, bandwidth, propagation_delay) * 1000
-        record_results(f"[Test 1] {y / 1024} KB; {time:.4f} ms")
+        record_results_csv("Test_1_FileSize", y / 1024, "KB", f"{time:.4f}")
         
 def generate_data_bandwidth(
     file_size = 1024 * 1024,  # Fixed: 1 MB file size
@@ -59,7 +70,7 @@ def generate_data_bandwidth(
         
     for bandwidth in bandwidths:
         time = theoretical_time(file_size, bandwidth, propagation_delay) * 1000
-        record_results(f"[Test 2] {bandwidth * 8 / (1024 * 1024):.1f} Mbps; {time:.4f} ms")
+        record_results_csv("Test_2_Bandwidth", bandwidth * 8 / (1024 * 1024), "Mbps", f"{time:.4f}")
         
 def generate_data_propagation_delay(
     file_size = 1024 * 1024,  # Fixed: 1 MB file size
@@ -75,7 +86,7 @@ def generate_data_propagation_delay(
                 
     for delay in delays:
         time = theoretical_time(file_size, bandwidth, delay) * 1000
-        record_results(f"[Test 3] {delay * 1000:.1f} ms delay; {time:.4f} ms")
+        record_results_csv("Test_3_PropagationDelay", delay * 1000, "ms", f"{time:.4f}")
 
 
 
