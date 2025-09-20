@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import subprocess
+import csv
 from pathlib import Path
 
 """
@@ -24,13 +25,15 @@ Linux only. Follows Unix philosophy: do one thing well.
 # Configuration - adjust these for your setup
 SERVER_IP = "10.0.1.1"  # IP of server VM
 SERVER_PORT = 3120
-# Find project root from current directory
+# Use current directory as base for all operations
 current_dir = Path(__file__).parent
-project_root = current_dir.parent.parent
 
-CLIENT_BINARY = str(project_root / "bin" / "client")
-test_file_location = str(project_root / "test_files")
-output_dir = str(project_root / "results")
+CLIENT_BINARY = str(current_dir / "bin" / "client")
+test_file_location = str(current_dir / "test_files")
+output_dir = str(current_dir / "results")
+
+# Global test counter for CSV tracking
+test_id_counter = 0
 
 def get_interface():
     """Get network interface that can reach the server IP."""
@@ -43,6 +46,38 @@ def get_interface():
         return interface
     except Exception:
         return ""
+
+
+def init_test_params_csv(filename="test_parameters.csv"):
+    """Initialize CSV file for test parameters."""
+    csv_path = Path(output_dir) / filename
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    
+    with open(csv_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['test_id', 'test_name', 'bandwidth', 'delay', 'file_size', 'file_path'])
+    
+    print(f"[CSV] Initialized test parameters CSV: {csv_path}")
+    return csv_path
+
+
+def log_test_params(test_id, test_name, bandwidth, delay, file_size, file_path, filename="test_parameters.csv"):
+    """Log test parameters to CSV file."""
+    csv_path = Path(output_dir) / filename
+    
+    with open(csv_path, 'a', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([test_id, test_name, bandwidth, delay, file_size, file_path])
+    
+    print(f"[CSV] Logged test {test_id}: {test_name}, {bandwidth}, {delay}, {file_size}")
+
+
+def get_next_test_id():
+    """Get next test ID and increment counter."""
+    global test_id_counter
+    current_id = test_id_counter
+    test_id_counter += 1
+    return current_id
 
 
 def has_tcconfig():
@@ -101,15 +136,19 @@ def create_test_file(size, filename, directory=test_file_location):
         print(f"[ERROR] Failed to create {filename}")
 
 
-def run_client_test(server_ip, server_port, test_file):
-    """Run client to send file to server."""
+def run_client_test(server_ip, server_port, test_file, test_name="", bandwidth="", delay="", file_size=""):
+    """Run client to send file to server and log parameters."""
     cmd = [CLIENT_BINARY, server_ip, str(server_port), test_file]
     print(f"[TEST] Sending {test_file} to {server_ip}:{server_port}")
+    
+    # Get test ID and log parameters
+    test_id = get_next_test_id()
+    log_test_params(test_id, test_name, bandwidth, delay, file_size, test_file)
     
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         if result.returncode == 0:
-            print(f"[OK] Transfer completed")
+            print(f"[OK] Transfer completed (Test ID: {test_id})")
             return True
         else:
             print(f"[ERROR] Transfer failed: {result.stderr}")
@@ -129,6 +168,40 @@ def make_test_directory(directory=test_file_location):
     """Create directory for test files if it doesn't exist."""
     Path(directory).mkdir(parents=True, exist_ok=True)
     print(f"[SETUP] Test files will be stored in: {directory}")
+
+
+def setup_local_environment():
+    """Setup the local directory structure and binaries."""
+    # Create necessary directories
+    bin_dir = current_dir / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create test files directory
+    Path(test_file_location).mkdir(parents=True, exist_ok=True)
+    
+    # Create results directory
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    
+    print(f"[SETUP] Created local directory structure:")
+    print(f"[SETUP] - bin: {bin_dir}")
+    print(f"[SETUP] - test_files: {test_file_location}")
+    print(f"[SETUP] - results: {output_dir}")
+    
+    # Check if client binary exists, if not try to find it in the project structure
+    if not Path(CLIENT_BINARY).exists():
+        # Try to find the client binary in the parent project structure
+        project_root = current_dir.parent.parent
+        source_binary = project_root / "foggytcp" / "bin" / "client"
+        
+        if source_binary.exists():
+            import shutil
+            shutil.copy2(source_binary, CLIENT_BINARY)
+            print(f"[SETUP] Copied client binary from {source_binary}")
+        else:
+            print(f"[WARN] Client binary not found at {source_binary}")
+            print(f"[WARN] You may need to build the project first or copy the binary manually to {CLIENT_BINARY}")
+    else:
+        print(f"[SETUP] Client binary found at {CLIENT_BINARY}")
 
 
 def check_sudo_access():
@@ -169,7 +242,8 @@ def run_test_suite(interface, test_name, bandwidth, delay, file_sizes):
         file_path = Path(test_file_location) / filename
         if file_path.exists():
             print(f"\n[{test_name.split(':')[0]}] Testing {size}")
-            run_client_test(SERVER_IP, SERVER_PORT, str(file_path))
+            run_client_test(SERVER_IP, SERVER_PORT, str(file_path), 
+                          test_name=test_name, bandwidth=bandwidth, delay=delay, file_size=size)
             time.sleep(1)
 
 
@@ -199,14 +273,23 @@ def run_variable_test(interface, test_name, fixed_params, variable_param, values
             time.sleep(0.5)
             
             # Set parameters based on what's being varied
+            current_bandwidth = ""
+            current_delay = ""
+            
             if variable_param == 'bandwidth':
+                current_bandwidth = value
+                current_delay = fixed_params['delay']
                 apply_network_shaping(interface, fixed_params['delay'], value)
             elif variable_param == 'delay':
+                current_bandwidth = fixed_params['bandwidth']
+                current_delay = value
                 apply_network_shaping(interface, value, fixed_params['bandwidth'])
             
             validate_network_settings(interface)
             time.sleep(1)
-            run_client_test(SERVER_IP, SERVER_PORT, str(file_path))
+            run_client_test(SERVER_IP, SERVER_PORT, str(file_path),
+                          test_name=f"{test_name} ({variable_param}={value})",
+                          bandwidth=current_bandwidth, delay=current_delay, file_size=size)
             time.sleep(1)
 
 
@@ -228,6 +311,13 @@ def main():
     if not sys.platform.startswith("linux"):
         print("[ERROR] Linux only")
         sys.exit(1)
+    
+    # Setup local environment first
+    print(f"[SETUP] Setting up local environment...")
+    setup_local_environment()
+    
+    # Initialize CSV for test parameters
+    init_test_params_csv()
     
     check_sudo_access()
     validate_client_binary_existence()

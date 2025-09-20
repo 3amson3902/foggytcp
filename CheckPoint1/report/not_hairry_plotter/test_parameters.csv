@@ -1,0 +1,19 @@
+test_id,test_name,bandwidth,delay,file_size,file_path
+0,TEST 1: Different File Sizes,10Mbps,10ms,1KB,/vagrant/CheckPoint1/experiment/test_files/1KB.txt
+1,TEST 1: Different File Sizes,10Mbps,10ms,5KB,/vagrant/CheckPoint1/experiment/test_files/5KB.txt
+2,TEST 1: Different File Sizes,10Mbps,10ms,25KB,/vagrant/CheckPoint1/experiment/test_files/25KB.txt
+3,TEST 1: Different File Sizes,10Mbps,10ms,100KB,/vagrant/CheckPoint1/experiment/test_files/100KB.txt
+4,TEST 1: Different File Sizes,10Mbps,10ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+5,TEST 1: Different File Sizes,10Mbps,10ms,10MB,/vagrant/CheckPoint1/experiment/test_files/10MB.txt
+6,TEST 2: Different Bandwidths (bandwidth=1Mbps),1Mbps,10ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+7,TEST 2: Different Bandwidths (bandwidth=2Mbps),2Mbps,10ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+8,TEST 2: Different Bandwidths (bandwidth=4Mbps),4Mbps,10ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+9,TEST 2: Different Bandwidths (bandwidth=5Mbps),5Mbps,10ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+10,TEST 2: Different Bandwidths (bandwidth=10Mbps),10Mbps,10ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+11,TEST 2: Different Bandwidths (bandwidth=20Mbps),20Mbps,10ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+12,TEST 3: Different Delays (delay=0ms),10Mbps,0ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+13,TEST 3: Different Delays (delay=5ms),10Mbps,5ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+14,TEST 3: Different Delays (delay=10ms),10Mbps,10ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+15,TEST 3: Different Delays (delay=20ms),10Mbps,20ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+16,TEST 3: Different Delays (delay=50ms),10Mbps,50ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt
+17,TEST 3: Different Delays (delay=100ms),10Mbps,100ms,1MB,/vagrant/CheckPoint1/experiment/test_files/1MB.txt

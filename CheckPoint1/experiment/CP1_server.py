@@ -17,15 +17,15 @@ This script:
 
 Linux only. Follows Unix philosophy: do one thing well.
 """
+
 SERVER_IP = "10.0.1.1"  # IP of server VM
 SERVER_PORT = 3120
-# Find project root from current directory
+# Use current directory as base for all operations
 current_dir = Path(__file__).parent
-project_root = current_dir.parent.parent
 
-BINARY = str(project_root / "bin" / "server")  # Path to server binary on server VM
-CLIENT_BINARY = str(project_root / "bin" / "client")
-OUTPUT_DIR = str(project_root / "results") + "/"
+BINARY = str(current_dir / "bin" / "server")  # Path to server binary on server VM
+CLIENT_BINARY = str(current_dir / "bin" / "client")
+OUTPUT_DIR = str(current_dir / "results") + "/"
 
 def hash_the_bin(binary_path=BINARY):
     """
@@ -93,8 +93,57 @@ def cleanup_results_file(directory=OUTPUT_DIR):
     if results_file.exists():
         os.remove(results_file)
 
+def setup_local_environment():
+    """Setup the local directory structure and binaries."""
+    # Create necessary directories
+    bin_dir = current_dir / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create results directory
+    Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+    
+    print(f"[SETUP] Created local directory structure:")
+    print(f"[SETUP] - bin: {bin_dir}")
+    print(f"[SETUP] - results: {OUTPUT_DIR}")
+    
+    # Check if server binary exists, if not try to find it in the project structure
+    if not Path(BINARY).exists():
+        # Try to find the server binary in the parent project structure
+        project_root = current_dir.parent.parent
+        source_binary = project_root / "foggytcp" / "bin" / "server"
+        
+        if source_binary.exists():
+            import shutil
+            shutil.copy2(source_binary, BINARY)
+            print(f"[SETUP] Copied server binary from {source_binary}")
+        else:
+            print(f"[WARN] Server binary not found at {source_binary}")
+            print(f"[WARN] You may need to build the project first or copy the binary manually to {BINARY}")
+    else:
+        print(f"[SETUP] Server binary found at {BINARY}")
+    
+    # Check if client binary exists for hash verification
+    if not Path(CLIENT_BINARY).exists():
+        # Try to find the client binary in the parent project structure
+        project_root = current_dir.parent.parent
+        source_client_binary = project_root / "foggytcp" / "bin" / "client"
+        
+        if source_client_binary.exists():
+            import shutil
+            shutil.copy2(source_client_binary, CLIENT_BINARY)
+            print(f"[SETUP] Copied client binary from {source_client_binary}")
+        else:
+            print(f"[WARN] Client binary not found at {source_client_binary}")
+            print(f"[WARN] Client binary hash verification will be skipped")
+    else:
+        print(f"[SETUP] Client binary found at {CLIENT_BINARY}")
+
 def main():
-    cleanup_results_file(OUTPUT_DIR)
+    # Setup local environment first
+    print(f"[SETUP] Setting up local environment...")
+    setup_local_environment()
+    
+    # cleanup_results_file(OUTPUT_DIR)
     record_results(f"Binary Hash: {hash_the_bin()}")
     record_results(f"Client Binary Hash: {hash_the_bin(CLIENT_BINARY)}")
     index = 0
