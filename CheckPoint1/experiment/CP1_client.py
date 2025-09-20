@@ -24,9 +24,13 @@ Linux only. Follows Unix philosophy: do one thing well.
 # Configuration - adjust these for your setup
 SERVER_IP = "10.0.1.1"  # IP of server VM
 SERVER_PORT = 3120
-CLIENT_BINARY = "../bin/client"  # Path to client binary on client VM
-test_file_location = "../test_files"
-output_dir = "../results/"
+# Find project root from current directory
+current_dir = Path(__file__).parent
+project_root = current_dir.parent.parent
+
+CLIENT_BINARY = str(project_root / "bin" / "client")
+test_file_location = str(project_root / "test_files")
+output_dir = str(project_root / "results")
 
 def get_interface():
     """Get network interface that can reach the server IP."""

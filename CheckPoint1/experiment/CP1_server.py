@@ -17,12 +17,15 @@ This script:
 
 Linux only. Follows Unix philosophy: do one thing well.
 """
-BINARY = "../bin/server"  # Path to server binary on server VM
-SERVER_IP = "10.0.1.1"
+SERVER_IP = "10.0.1.1"  # IP of server VM
 SERVER_PORT = 3120
-OUTPUT_DIR = "../results/"
+# Find project root from current directory
+current_dir = Path(__file__).parent
+project_root = current_dir.parent.parent
 
-CLIENT_BINARY = "../bin/client"  # Path to client binary on client VM
+BINARY = str(project_root / "bin" / "server")  # Path to server binary on server VM
+CLIENT_BINARY = str(project_root / "bin" / "client")
+OUTPUT_DIR = str(project_root / "results") + "/"
 
 def hash_the_bin(binary_path=BINARY):
     """
